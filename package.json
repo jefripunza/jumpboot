@@ -1,8 +1,7 @@
 {
   "name": "jumpboot",
   "description": "node js framework implemented from java springboot",
-  "version": "1.0.0",
-  "private": true,
+  "version": "1.0.1",
   "license": "MIT",
   "keywords": [
     "framework",
