@@ -1,0 +1,73 @@
+{
+  "name": "jumpboot",
+  "description": "node js framework implemented from java springboot",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "keywords": [
+    "framework",
+    "nodejs",
+    "express",
+    "typeorm",
+    "microservices"
+  ],
+  "author": {
+    "name": "Jefri Herdi Triyanto",
+    "email": "jefripunza@gmail.com",
+    "url": "https://portofolio.jefripunza.repl.co"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jefripunza/jumpboot.git"
+  },
+  "main": "index.ts",
+  "bin": {
+    "jumpboot": "cli.ts"
+  },
+  "scripts": {
+    "lint": "npx eslint src/**/*.ts",
+    "clean": "npx cross-env rm -rf ./node_modules",
+    "reset": "npx yarn clean && npx yarn install",
+    "test": ""
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "chalk": "4.1.2",
+    "cross-env": "^7.0.3",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.16.4",
+    "express-form-data": "^2.0.18",
+    "figlet": "^1.5.2",
+    "jsonwebtoken": "^8.5.1",
+    "mongodb": "^4.7.0",
+    "morgan": "^1.10.0",
+    "mysql2": "^2.3.3",
+    "pg": "^8.7.3",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.6",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/express": "^4.16.1",
+    "@types/express-form-data": "^2.0.2",
+    "@types/figlet": "^1.5.4",
+    "@types/inquirer": "^8.2.1",
+    "@types/jsonwebtoken": "^8.5.8",
+    "@types/morgan": "^1.9.3",
+    "@types/node": "^14.0.27",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.33.0",
+    "@vercel/ncc": "^0.34.0",
+    "eslint": "^7.29.0",
+    "eslint-plugin-jest": "^24.3.6",
+    "inquirer": "^8.2.4",
+    "nodemon": "^2.0.16",
+    "ts-node": "^10.7.0",
+    "ts-node-dev": "^2.0.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.7.2"
+  }
+}
