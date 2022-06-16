@@ -4,9 +4,8 @@ import * as http from "http";
 import express, { Express, Request, Response } from "express";
 import morgan from "morgan";
 
-import { Fix, log, isProduction, Page, isCompiled } from "..";
+import { Fix, log_system, isProduction, Page, isCompiled } from "..";
 import * as path from "path";
-import * as fs from "fs";
 
 export { Request, Response };
 
@@ -100,7 +99,7 @@ export const Server = {
     });
     setTimeout(() => {
       server.listen(port, () => {
-        log.running("express", `Server Listen at port : ${port}`);
+        log_system.running("express", `Server Listen at port : ${port}`);
 
         // open new tab
         // Open.New.Tab(`http://localhost:${port}`);
@@ -109,7 +108,7 @@ export const Server = {
         if (!isCompiled) {
           app.use(
             "/jumpboot",
-            express.static(path.join(__dirname, "..", "assets"))
+            express.static(path.join(__dirname, "..", "static"))
           );
         }
 

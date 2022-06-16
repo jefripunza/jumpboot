@@ -11,8 +11,7 @@
     "noEmitOnError": true,
     "removeComments": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "types": ["node"]
+    "emitDecoratorMetadata": true
   },
   "exclude": ["node_modules", "**/*test.ts"]
 }
