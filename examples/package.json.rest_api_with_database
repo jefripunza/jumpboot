@@ -11,13 +11,18 @@
   "main": "./src/index.ts",
   "license": "MIT",
   "scripts": {
-    "start": "node ./dist",
     "dev": "npx nodemon",
     "lint": "npx eslint src/**/*.ts",
     "clean": "npx cross-env rm -rf ./dist",
     "reset": "npx cross-env rm -rf ./node_modules && yarn install",
     "compile": "npx yarn clean && npx ncc build ./src/index.ts --no-cache",
     "build": "npx yarn compile",
+    "start": "node ./dist",
+    "ms": "pm2 start ./dist/index.js --name package-project-name",
+    "ms:start": "pm2 start package-project-name",
+    "ms:stop": "pm2 stop package-project-name",
+    "ms:reload": "pm2 reload package-project-name",
+    "ms:remove": "npx yarn ms:stop && pm2 delete package-project-name",
     "test": ""
   },
   "dependencies": {
