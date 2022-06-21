@@ -1,4 +1,4 @@
-export const jumpboot_version = "1.0.18";
+export const jumpboot_version = "1.0.20";
 
 const my_hosting = "https://jefripunza.com";
 const my_portofolio = "https://portofolio.jefripunza.repl.co";

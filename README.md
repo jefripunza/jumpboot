@@ -2,7 +2,7 @@
 
 **Simple, Fast, and Customable**
 
-![banner](/core/static/img/BANNER.jpg)
+![banner](https://raw.githubusercontent.com/jefripunza/jumpboot/main/core/static/img/BANNER.jpg)
 
 [Link Framework][url_jumpboot]
 
