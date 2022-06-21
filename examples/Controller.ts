@@ -10,7 +10,7 @@ import {
   DeleteMapping,
   ValidateBody,
   Example,
-} from "jumpboot";
+} from "../core";
 
 // Services
 // import * as TargetCamelCaseService from "../services/TargetCamelCaseService";

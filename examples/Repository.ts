@@ -1,4 +1,4 @@
-import { Models } from "jumpboot";
+import { Models } from "../../core";
 
 // import TargetCamelCase from "../entities/TargetCamelCaseEntity";
 
@@ -10,17 +10,17 @@ interface MainContent {
 // -------------------------------------------------------- //
 
 // Create
-export const inputTargetCamelCase = async (data: MainContent) => {
+export const inputTargetCamelCase = (data: MainContent) => {
   // return Models.InputFromGetId(TargetCamelCase, data)
 };
 
 // Read
-export const showAllTargetCamelCase = async () => {
+export const showAllTargetCamelCase = () => {
   // return Models.SelectFrom(TargetCamelCase, {});
 };
 
 // Update
-export const updateFromTargetCamelCaseWhereId = async (
+export const updateFromTargetCamelCaseWhereId = (
   where: MainContent,
   new_data: MainContent
 ) => {
@@ -28,7 +28,7 @@ export const updateFromTargetCamelCaseWhereId = async (
 };
 
 // Change
-export const changeFromTargetCamelCaseWhereId = async (
+export const changeFromTargetCamelCaseWhereId = (
   where: MainContent,
   new_data: MainContent
 ) => {
@@ -36,6 +36,6 @@ export const changeFromTargetCamelCaseWhereId = async (
 };
 
 // Delete
-export const deleteFromTargetCamelCaseWhereId = async (where: MainContent) => {
+export const deleteFromTargetCamelCaseWhereId = (where: MainContent) => {
   // return Models.DeleteFrom(TargetCamelCase, where);
 };

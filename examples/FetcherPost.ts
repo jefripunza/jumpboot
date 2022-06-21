@@ -1,4 +1,4 @@
-import { Fetcher } from "jumpboot";
+import { Fetcher } from "../core";
 
 interface Body {
   id: string | number;

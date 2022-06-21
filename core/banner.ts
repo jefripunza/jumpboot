@@ -15,7 +15,7 @@ const jumpboot_figlet = `
  ╚════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═════╝  ╚═════╝  ╚═════╝    ╚═╝  
 `;
 
-const banner = () => {
+const banner = (isCLI = false) => {
   if (!isCompiled) {
     console.log("\x1Bc"); // color reset and clear
   }
@@ -34,11 +34,18 @@ const banner = () => {
   console.log(chalk.bold.green(jumpboot_figlet));
 
   console.log(Information.project_root);
-  console.log(`
-  ▸ Project Name : ${Information.project_name}
-  ▸ Home Path    : ${Information.path.home}
-  ▸ PC Name      : ${Information.computer.name}
-  `);
+  if (isCLI) {
+    console.log(`
+    ▸ Home Path    : ${Information.path.home}
+    ▸ PC Name      : ${Information.computer.name}
+    `);
+  } else {
+    console.log(`
+    ▸ Project Name : ${Information.project_name}
+    ▸ Home Path    : ${Information.path.home}
+    ▸ PC Name      : ${Information.computer.name}
+    `);
+  }
 };
 
 // banner(); // single test

@@ -1,10 +1,10 @@
-import { Fetcher } from "jumpboot";
+import { Fetcher } from "../core";
 
 interface Body {
   id: string | number;
 }
 export default async (body: Body): Promise<any> => {
-  const response = await Fetcher.put({
+  const response = await Fetcher.patch({
     url: process.env.URL_HOSTNAME_TARGET + "/endpoint_target",
     body,
   });

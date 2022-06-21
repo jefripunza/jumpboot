@@ -1,4 +1,4 @@
-import { Fetcher } from "jumpboot";
+import { Fetcher } from "../core";
 
 export default async (): Promise<any> => {
   const response = await Fetcher.get({

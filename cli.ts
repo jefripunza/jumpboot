@@ -5,10 +5,12 @@
 
 import * as path from "path";
 import * as fs from "fs";
+import * as child_process from "child_process";
 
 // ================================================================ //
 // ========================== 3th Module ========================== //
 
+import axios, { AxiosResponse } from "axios";
 import chalk from "chalk";
 import * as inquirer from "inquirer";
 import * as crypto from "crypto";
@@ -16,24 +18,435 @@ import * as crypto from "crypto";
 // ================================================================ //
 // ========================= Main Module ========================== //
 
-import {
-  delay,
-  Create,
-  Generate,
-  Convert,
-  Information,
-  System,
-  Fetcher,
-  Folder,
-} from "./core";
+const isCompiled = String(__filename).endsWith(".js");
 
-import { my_website, jumpboot_website } from "./core/config";
+const delay = async (timeout = 500) => {
+  return await new Promise((resolve) => setTimeout(resolve, timeout));
+};
+
+const Create = {
+  Directory: {
+    isNotExist: (dir: fs.PathLike) => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        // promises.mkdir(dir, { recursive: true });
+      }
+    },
+  },
+  Date: {
+    sum: {
+      Minutes: (date: Date, minutes: number) => {
+        return new Date(date.getTime() + minutes * 60000);
+      },
+    },
+  },
+};
+
+const full_characters =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const otp_characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+const Generate = {
+  random: {
+    integer: (min: number, max: number) => {
+      return Math.floor(Math.random() * (max - min)) + min;
+    },
+    string: (length = 20) => {
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += full_characters.charAt(
+          Math.floor(Math.random() * full_characters.length)
+        );
+      }
+      return result;
+    },
+    OTP: (length = 4) => {
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += otp_characters.charAt(
+          Math.floor(Math.random() * otp_characters.length)
+        );
+      }
+      return result;
+    },
+    HEX: (length = 20) => {
+      return crypto.randomBytes(length).toString("hex");
+    },
+  },
+  multiple: {
+    digits: (num: number) => {
+      let text = "";
+      for (let i = 0; i < num; i++) {
+        if (i > 0) {
+          text = `${text},`;
+        }
+        text = text + String(i + 1);
+      }
+      return text.split(",");
+    },
+    fill: (num: number) => {
+      let angka = "";
+      let a = 0;
+      for (let i = 0; i < num; i++) {
+        a++;
+        if (a === 10) {
+          a = 0;
+        }
+        angka += a;
+      }
+      return angka;
+    },
+  },
+};
+
+const Convert = {
+  Text: {
+    Original: {
+      to: {
+        CapitalizeFirstLetter: (str: string) => {
+          return str
+            .split(" ")
+            .map((a: string | any[]) => {
+              return a[0].toUpperCase() + a.slice(1);
+            })
+            .join(" ");
+        },
+      },
+    },
+    // ---------------------------------------------------------------------
+    Space: {
+      to: {
+        CamelCase: (str: any) =>
+          String(str)
+            .split("_")
+            .join(" ")
+            .split("-")
+            .join(" ")
+            .replace(/(?:^\w|[A-Z]|\b\w)/g, (word) => word.toUpperCase())
+            .replace(/\s+/g, ""),
+      },
+    },
+    // ---------------------------------------------------------------------
+    CamelCase: {
+      to: {
+        Title: (str: any) =>
+          String(str)
+            .replace(/([A-Z])/g, (match) => " " + match)
+            .split(" ")
+            .map((text) =>
+              String(text).replace(/^./, (match) => match.toUpperCase())
+            )
+            .join(" ")
+            .replace(/  /gi, " ")
+            .trim(),
+        SnakeCase: (str: any) =>
+          String(str)
+            .replace(/[A-Z]/g, (letter) => `_${String(letter).toLowerCase()}`)
+            .split("")
+            .filter((_, i) => i > 0)
+            .join(""),
+      },
+    },
+    // ---------------------------------------------------------------------
+    All: {
+      to: {
+        AllFormat: (name: any) => {
+          // init
+          let new_name = name;
+
+          // remove extension (js, ts)
+          if (String(new_name).includes(".")) {
+            new_name = String(new_name).split(".")[0];
+          }
+
+          // remove topic of first input
+          new_name = String(new_name)
+            .replace(/Controller/g, "")
+            .replace(/controller/g, "")
+            .replace(/Service/g, "")
+            .replace(/service/g, "")
+            .replace(/Entities/g, "")
+            .replace(/entities/g, "")
+            .replace(/Entity/g, "")
+            .replace(/entity/g, "")
+            .replace(/Repository/g, "")
+            .replace(/repository/g, "");
+
+          // to camel case
+          const camelcase = Convert.Text.Space.to.CamelCase(new_name);
+
+          const title = Convert.Text.CamelCase.to.Title(new_name);
+
+          // save camel case
+          const snakecase = Convert.Text.CamelCase.to.SnakeCase(camelcase);
+
+          // for path rest controller
+          const url_path = String(snakecase).toLowerCase().split("_").join("-");
+
+          // render
+          const render = {
+            title,
+            camelcase,
+            snakecase,
+            url_path,
+          };
+          // console.log({ render }); // debug
+          return render;
+        },
+      },
+    },
+  },
+  // ---------------------------------------------------------------------
+  String: {
+    only: {
+      number: (text: string): number => {
+        return parseInt(String(text).replace(/\D/g, ""));
+      },
+    },
+  },
+  Number: {
+    only: {
+      alphabet: (text: string) => {
+        return String(text).replace(/[^a-zA-Z]+/g, "");
+      },
+    },
+  },
+};
+
+const Information = {
+  jumpboot_path: isCompiled ? path.join(__dirname, "..") : __dirname,
+  project_root: process.env.PWD
+    ? String(process.env.PWD)
+    : String(process.env.CWD),
+  project_name: path.basename(process.cwd()),
+  computer: {
+    name: process.env.HOSTNAME,
+  },
+  path: {
+    home: process.env.HOME,
+  },
+  IP: {
+    local: async () =>
+      await new Promise((resolve) => {
+        require("dns").lookup(
+          require("os").hostname(),
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          function (err: any, add: unknown, fam: any) {
+            resolve(add);
+          }
+        );
+      }),
+  },
+};
+
+const Fix = {
+  FirstZeros: (value: number) => {
+    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+    return (value < 10 ? "0" : "") + value;
+  },
+  UrlSlash: (url: string): any => {
+    const text = String(String(url).startsWith("/") ? url : `/${url}`).replace(
+      /\/\//gi,
+      "/"
+    );
+    return String(text).includes("//") ? Fix.UrlSlash(text) : text;
+  },
+};
+
+const formatUptime = (seconds: string | number) => {
+  const fix_seconds =
+    typeof seconds === "string" ? parseInt(seconds, 10) : seconds;
+  const hours = Math.floor(fix_seconds / (60 * 60));
+  const minutes = Math.floor((fix_seconds % (60 * 60)) / 60);
+  const ok_seconds = Math.floor(fix_seconds % 60);
+  return `${Fix.FirstZeros(hours)} Jam ${Fix.FirstZeros(
+    minutes
+  )} Menit ${Fix.FirstZeros(ok_seconds)} Detik`;
+};
+
+const System = {
+  uptime: () => {
+    return formatUptime(process.uptime());
+  },
+  //
+  execute: async (cmd: string[], dirname = Information.project_root) => {
+    return await new Promise((resolve, reject) => {
+      const exec: any = child_process.exec(
+        cmd.join(" && "),
+        {
+          cwd: dirname,
+        },
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(new Error(error.message));
+          } else {
+            resolve(stdout);
+          }
+        }
+      );
+      exec.stdout.pipe(process.stdout);
+    });
+  },
+};
+
+interface DynamicString {
+  [key: string]: string;
+}
+
+interface GetAndDelete {
+  url: string;
+  token?: string | boolean;
+  headers?: DynamicString;
+}
+interface PostAndPut {
+  url: string;
+  token?: string | boolean;
+  body?: object;
+  headers?: DynamicString;
+}
+export const Fetcher = {
+  get: async ({ url, token = false, headers = {} }: GetAndDelete) => {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await handler(axios.get(url, { headers }));
+  },
+  post: async ({ url, token = false, body = {}, headers = {} }: PostAndPut) => {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await handler(axios.post(url, body, { headers }));
+  },
+  put: async ({ url, token = false, body = {}, headers = {} }: PostAndPut) => {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await handler(axios.put(url, body, { headers }));
+  },
+  patch: async ({
+    url,
+    token = false,
+    body = {},
+    headers = {},
+  }: PostAndPut) => {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await handler(axios.patch(url, body, { headers }));
+  },
+  delete: async ({ url, token = false, headers = {} }: GetAndDelete) => {
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return await handler(axios.delete(url, { headers }));
+  },
+};
+
+async function handler(response: any) {
+  return new Promise(async (resolve, reject) => {
+    response
+      .catch(function (error: {
+        response: {
+          status: any;
+          data: { message: any };
+          headers: any;
+        };
+        code?: string;
+      }) {
+        if (error?.response?.status) {
+          reject({
+            status: error.response.status,
+            message: error.response.data.message,
+            headers: error.response.headers,
+          });
+        } else {
+          reject({ message: error.code });
+        }
+      })
+      .then((result: AxiosResponse) => {
+        try {
+          return result.data;
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .then((result: unknown) => resolve(result));
+  });
+}
+
+async function copyFileSync(source: string, target: string) {
+  let targetFile = target;
+  // If target is a directory, a new file with the same name will be created
+  if (fs.existsSync(target)) {
+    if (fs.lstatSync(target).isDirectory()) {
+      targetFile = path.join(target, path.basename(source));
+    }
+  }
+  await fs.writeFileSync(targetFile, await fs.readFileSync(source));
+}
+
+const Folder = {
+  copy: {
+    to: async (source: string, target: string) => {
+      let files = [];
+      // Check if folder needs to be created or integrated
+      const targetFolder = path.join(target, path.basename(source));
+      if (!fs.existsSync(targetFolder)) {
+        fs.mkdirSync(targetFolder, { recursive: true });
+      }
+      // Copy
+      if (fs.lstatSync(source).isDirectory()) {
+        files = fs.readdirSync(source);
+        files.forEach(async (file) => {
+          const curSource = path.join(source, file);
+          if (fs.lstatSync(curSource).isDirectory()) {
+            await Folder.copy.to(curSource, targetFolder);
+          } else {
+            await copyFileSync(curSource, targetFolder);
+          }
+        });
+      }
+    },
+    AllFiles: {
+      to: async (sourceFolder: string, targetFolder: string) => {
+        const files = fs.readdirSync(sourceFolder);
+        files.forEach(async (file) => {
+          const curSource = path.join(sourceFolder, file);
+          await copyFileSync(curSource, targetFolder);
+        });
+      },
+    },
+  },
+  rename: async (oldPath: string, newPath: string) => {
+    fs.renameSync(oldPath, newPath);
+  },
+};
+
+const my_website = "https://portofolio.jefripunza.repl.co";
+const jumpboot_website = "https://github.com/jefripunza/jumpboot";
 
 // ================================================================ //
 // ========================== Banner App ========================== //
 
-import banner from "./core/banner";
-banner();
+const jumpboot_figlet = `
+     ██╗██╗   ██╗███╗   ███╗██████╗ ██████╗  ██████╗  ██████╗ ████████╗
+     ██║██║   ██║████╗ ████║██╔══██╗██╔══██╗██╔═══██╗██╔═══██╗╚══██╔══╝
+     ██║██║   ██║██╔████╔██║██████╔╝██████╔╝██║   ██║██║   ██║   ██║   
+██   ██║██║   ██║██║╚██╔╝██║██╔═══╝ ██╔══██╗██║   ██║██║   ██║   ██║   
+╚█████╔╝╚██████╔╝██║ ╚═╝ ██║██║     ██████╔╝╚██████╔╝╚██████╔╝   ██║   
+ ╚════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═════╝  ╚═════╝  ╚═════╝    ╚═╝  
+`;
+console.log(
+  "\x1Bc", // color reset and clear
+  chalk.bold.green(jumpboot_figlet),
+  `
+▸ Project Name : ${Information.project_name}
+▸ Root Path    : ${Information.project_root}
+▸ Home Path    : ${Information.path.home}
+▸ PC Name      : ${Information.computer.name}
+`
+);
+
 const line =
   "----------------------------------------------------------------------";
 const batas = {
@@ -95,10 +508,10 @@ const ask = {
 };
 
 const example_dir = (file_name: string) =>
-  path.join(__dirname, "assets", "examples", file_name);
+  path.join(Information.jumpboot_path, "examples", file_name);
 
 const license_dir = (file_name: string) =>
-  path.join(__dirname, "assets", "examples", "licenses", file_name);
+  path.join(Information.jumpboot_path, "examples", "licenses", file_name);
 
 const prepare = async (message: string) => {
   console.log("");
@@ -376,13 +789,13 @@ setTimeout(() => {
 
       // Copy Root (default)
       await Folder.copy.AllFiles.to(
-        path.join(__dirname, "root"),
+        path.join(Information.jumpboot_path, "root"),
         Information.project_root
       );
 
       // Copy Select Template
       await Folder.copy.to(
-        path.join(__dirname, "template", select_template),
+        path.join(Information.jumpboot_path, "template", select_template),
         Information.project_root
       );
       // Rename : template > src
@@ -393,7 +806,7 @@ setTimeout(() => {
 
       // Copy Core (default)
       await Folder.copy.to(
-        path.join(__dirname, "core"),
+        path.join(Information.jumpboot_path, "core"),
         path.join(Information.project_root, "src")
       );
 
@@ -414,17 +827,17 @@ setTimeout(() => {
         core_index + `\nexport * from "./app";\n`,
         { encoding: "utf-8" }
       );
-      //
+
       const core_app = [];
       // Copy Core App Default
       await fs.copyFileSync(
-        path.join(__dirname, "app", "Server.ts"),
+        path.join(Information.jumpboot_path, "app", "Server.ts"),
         target_path.core_app("Server.ts")
       );
       core_app.push("Server");
       if (AnswerTemplate.rest_api_with_database === select_template_default) {
         await fs.copyFileSync(
-          path.join(__dirname, "app", "Database.ts"),
+          path.join(Information.jumpboot_path, "app", "Database.ts"),
           target_path.core_app("Database.ts")
         );
         core_app.push("Database");
@@ -501,6 +914,7 @@ setTimeout(() => {
 
       // package install
       await System.execute(["yarn"]);
+
       // check if input git remote
       if (git_remote) {
         removeGitInitDirectory();
@@ -654,7 +1068,7 @@ setTimeout(() => {
           basicFile(`Fetcher${method_select}.ts`, target_path.fetch(camelcase));
         } else if (topic === AnswerCreate.license) {
           const list_license = fs.readdirSync(
-            path.join(__dirname, "assets", "examples", "licenses")
+            path.join(Information.jumpboot_path, "examples", "licenses")
           );
           const license_select = await ask.list("License Type:", list_license);
           //
@@ -780,6 +1194,7 @@ setTimeout(() => {
           .branch;
         const commit: string = await ask.input("Commit:", true);
         await System.execute([
+          `git pull`,
           `git add .`,
           `git commit -m "${commit.replace(/"/g, '\\"').replace(/&/g, "and")}"`,
           `git push -u origin ${default_branch}`,

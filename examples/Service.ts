@@ -1,4 +1,4 @@
-import { Services } from "jumpboot";
+import { Services } from "../core";
 
 // Repository
 // import * as TargetCamelCase from "../models/repository/TargetCamelCaseRepository";

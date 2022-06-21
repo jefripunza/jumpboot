@@ -1,4 +1,4 @@
-import { TypeORM } from "jumpboot";
+import { TypeORM } from "../../core";
 const { Entity, PrimaryGeneratedColumn, Column } = TypeORM;
 
 @Entity({ name: "target_snake_case" })

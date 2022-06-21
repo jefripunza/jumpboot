@@ -1,4 +1,4 @@
-import { Request, Response, Fetcher, StatusCode, requireEnv } from "jumpboot";
+import { Request, Response, Fetcher, StatusCode, requireEnv } from "../core";
 
 // requireEnv("ENV_VALUE");
 

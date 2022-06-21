@@ -1,0 +1,46 @@
+on: push
+name: 🚀 Deploy website on push
+jobs:
+  web-deploy:
+    name: 🎉 Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: 🔨 Build Project
+        run: |
+          npm install
+          npm run build
+
+      - name: 📁 Remove Meta Files
+        run: |
+          rm -rf node_modules
+          rm -rf src
+          rm .editorconfig
+          rm .eslintignore
+          rm .eslintrc.json
+          rm .gitignore
+          rm nodemon.json
+          rm package.json
+          rm README.md
+          rm tsconfig.json
+          rm tslint.json
+          rm yarn.lock || true
+
+      - name: 📁 Top Level Change
+        run: |
+          mv -v ./dist/* ./
+          rm -rf dist
+
+      - name: 📂 Sync files
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ftp.website.com
+          username: ${{ secrets.ftp_email }}
+          password: ${{ secrets.ftp_password }}
